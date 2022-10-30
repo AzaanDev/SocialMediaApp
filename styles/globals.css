@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 html,
 body {
   padding: 0;
@@ -22,5 +26,11 @@ a {
   body {
     color: white;
     background: black;
+  }
+}
+
+@layer components {
+  .voteButtons {
+    @apply h-6 w-6 hover:bg-gray-200 p-1 rounded-md
   }
 }

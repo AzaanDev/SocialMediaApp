@@ -1,0 +1,250 @@
+type Comment {
+  created_at: DateTime
+  id: ID!
+  post_id: ID
+  text: String
+  username: String
+}
+
+type Community {
+  created_at: DateTime
+  id: ID!
+  topic: String
+}
+
+type Likes {
+  created_at: DateTime
+  id: ID!
+  like: Boolean
+  post_id: ID
+  username: String
+}
+
+type Post {
+  body: String
+  community_id: ID
+  created_at: DateTime
+  id: ID!
+  image: String
+  title: String
+  username: String
+  likes: [Likes]
+    @materializer(
+      query: "getLikesByPostId"
+      arguments: [{ name: "post_id", field: "id" }]
+    )
+  comment: [Comment]
+    @materializer(
+      query: "getCommentByPostId"
+      arguments: [{ name: "post_id", field: "id" }]
+    )
+  community: [Community]
+    @materializer(
+      query: "getCommunityListById"
+      arguments: [{ name: "id", field: "community_id" }]
+    )
+}
+
+type Query {
+  getCommentList: [Comment]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "comment"
+      configuration: "postgresql_config"
+    )
+  getLikesByPostId(post_id: ID!): [Likes]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      query: """
+      select * from "public"."likes" where "post_id" = $1
+      order by "created_at" desc
+      """
+      configuration: "postgresql_config"
+    )
+  getCommentByPostId(post_id: ID!): [Comment]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      query: """
+      select * from "public"."comment" where "post_id" = $1
+      """
+      configuration: "postgresql_config"
+    )
+  getCommunityListById(id: ID!): [Community]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      query: """
+      select * from "public"."community" where "id" = $1
+      """
+      configuration: "postgresql_config"
+    )
+  """
+  This query is an example of how to simply paginate your responses.
+  """
+  getPaginatedCommentList(first: Int!, after: Int!): [Comment]
+    @dbquery(
+      type: "postgresql"
+      query: """
+      select * from "public"."comment" limit $1 offset $2
+      """
+      configuration: "postgresql_config"
+    )
+  """
+  In this example, a single query parameter is passed. If the request to the DB will
+  return at most one value you can remove the square brackets from the result.
+  """
+  getCommentByPost_id(post_id: ID!): [Comment]
+    @dbquery(
+      type: "postgresql"
+      query: """
+      select * from "public"."comment" where "post_id" = $1
+      """
+      configuration: "postgresql_config"
+    )
+  """
+  In this example, two query parameters are passed. If the request to the DB will
+  return at most one value you can remove the square brackets from the result.
+  """
+  getCommentByPost_idAndUsername(post_id: ID!, username: String!): [Comment]
+    @dbquery(
+      type: "postgresql"
+      query: """
+      select * from "public"."comment" where "post_id" = $1 and "username" = $2
+      """
+      configuration: "postgresql_config"
+    )
+  getCommunityList: [Community]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "community"
+      configuration: "postgresql_config"
+    )
+
+  getCommunityListByTopic(topic: String!): [Community]
+    @dbquery(
+      type: "postgresql"
+      query: """
+      select * from "public"."community" where "topic" = $1
+      """
+      configuration: "postgresql_config"
+    )
+
+  getLikesList: [Likes]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "likes"
+      configuration: "postgresql_config"
+    )
+  getPostList: [Post]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      query: """
+      select * from "public"."post" order by "post"."created_at" desc
+      """
+      configuration: "postgresql_config"
+    )
+
+  getPostListByTopic(topic: String!): [Post]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      query: """
+      select *, "post".id as id from "post" join
+      "community" on "community"."id" = "post"."community_id"
+      where "community"."topic" = $1 order by "post"."created_at" desc
+      """
+      configuration: "postgresql_config"
+    )
+
+  getLikesByPostId(post_id: ID!): [Likes]
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      query: """
+      select * from "public"."likes" where "post_id" = $1
+      order by "created_at" desc
+      """
+      configuration: "postgresql_config"
+    )
+
+  getPostById(post_id: ID!): Post
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      query: """
+      select * from "public"."post" where "post"."id" = $1
+      """
+      configuration: "postgresql_config"
+    )
+}
+
+type Mutation {
+  """
+  In this mutation example you can see how to do a mutation to insert data in the database.
+  """
+  insertPost(
+    body: String
+    image: String
+    community_id: ID
+    title: String
+    username: String
+  ): Post
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "post"
+      dml: INSERT
+      configuration: "postgresql_config"
+    )
+
+  insertCommunity(topic: String!): Community
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "community"
+      dml: INSERT
+      configuration: "postgresql_config"
+    )
+
+  insertComment(post_id: ID!, username: String!, text: String!): Comment
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "comment"
+      dml: INSERT
+      configuration: "postgresql_config"
+    )
+  insertLike(post_id: ID!, username: String!, like: Boolean!): Likes
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "likes"
+      dml: INSERT
+      configuration: "postgresql_config"
+    )
+  """
+  In this mutation example you can see how to do a mutation to delete data from the database.
+  """
+  deletePost(
+    image: String!
+    created_at: DateTime!
+    community_id: ID!
+    id: ID!
+    body: String!
+    title: String!
+    username: String!
+  ): Post
+    @dbquery(
+      type: "postgresql"
+      schema: "public"
+      table: "post"
+      dml: DELETE
+      configuration: "postgresql_config"
+    )
+}
