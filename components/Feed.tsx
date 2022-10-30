@@ -8,14 +8,15 @@ type Props = {
 };
 
 const Feed = ({ topic }: Props) => {
-  const { data, error } = !topic
-    ? useQuery(GET_ALL_POSTS)
-    : useQuery(GET_ALL_POSTS_BY_TOPIC, {
-        variables: {
-          topic: topic,
-        },
-      });
-  const posts: Post[] = !topic ? data?.getPostList: data?.getPostListByTopic;
+  const skip = !topic
+  const { data: data1} = useQuery(GET_ALL_POSTS, {skip: !skip})
+  const { data: data2 } = useQuery(GET_ALL_POSTS_BY_TOPIC, {
+    skip: skip,
+    variables: {
+      topic: topic,
+    },
+  });
+  const posts: Post[] = skip ? data1?.getPostList: data2?.getPostListByTopic;
 
   return (
     <div className="mt-5 space-y-4">
@@ -27,3 +28,13 @@ const Feed = ({ topic }: Props) => {
 };
 
 export default Feed;
+
+/*
+  const { data } = !topic
+    ? useQuery(GET_ALL_POSTS)
+    : useQuery(GET_ALL_POSTS_BY_TOPIC, {
+        variables: {
+          topic: topic,
+        },
+      });
+*/

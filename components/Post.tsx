@@ -18,7 +18,7 @@ const Post = ({ post }: Props) => {
   const { data: session } = useSession();
   const [like, setLike] = useState<boolean>();
 
-  const { data, loading } = useQuery(GET_ALL_LIKES_BY_POST_ID, {
+  const { data } = useQuery(GET_ALL_LIKES_BY_POST_ID, {
     variables: {
       post_id: post?.id,
     },
