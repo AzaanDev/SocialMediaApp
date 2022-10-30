@@ -17,17 +17,17 @@ type FormData = {
 
 const PostPage = (props: Props) => {
   const router = useRouter();
-
   const { data: session } = useSession();
-  const [addComment] = useMutation(ADD_COMMENT, {
-    refetchQueries: [GET_POST_BY_ID, "getPostById"],
-  });
-
   const { data } = useQuery(GET_POST_BY_ID, {
     variables: {
       post_id: router.query.postId,
     },
   });
+  const [addComment] = useMutation(ADD_COMMENT, {
+    refetchQueries: [GET_POST_BY_ID, "getPostById"],
+  });
+
+
 
   const post: Post = data?.getPostById;
 
